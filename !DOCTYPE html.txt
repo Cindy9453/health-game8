@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>健康知識打怪遊戲</title>
+<style>
+body { margin:0; font-family:sans-serif; background:#111; color:white; text-align:center; }
+#game { padding:20px; }
+.bar { height:20px; width:300px; background:#444; margin:10px auto; }
+.hp { height:100%; background:lime; }
+#monsterHP .hp { background:red; }
+button { padding:10px 20px; margin:10px; }
+</style>
+</head>
+<body>
+<div id="game">
+<h1>⚔️ 健康知識打怪 ⚔️</h1>
+<div>
+<p>英雄 HP</p>
+<div id="heroHP" class="bar"><div class="hp" style="width:100%"></div></div>
+<p>怪物 HP</p>
+<div id="monsterHP" class="bar"><div class="hp" style="width:100%"></div></div>
+</div>
+<h2 id="question"></h2>
+<div id="choices"></div>
+</div>
+
+<audio id="bgm" loop src="https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c83.mp3"></audio>
+<audio id="hit" src="https://cdn.pixabay.com/audio/2022/03/15/audio_49b1d9.mp3"></audio>
+<audio id="hurt" src="https://cdn.pixabay.com/audio/2022/03/15/audio_c6ccf4.mp3"></audio>
+
+<script>
+let heroHP = 100;
+let monsterHP = 100;
+let used = [];
+
+const questions = [
+{q:"每天建議睡眠幾小時？",a:["3","5","7-9","12"],c:2},
+{q:"哪個是健康飲食？",a:["炸雞","蔬菜","糖果","汽水"],c:1},
+{q:"BMI過高代表？",a:["過瘦","正常","過重","身高高"],c:2},
+{q:"每天建議喝水量約？",a:["500ml","1000ml","2000ml","5000ml"],c:2},
+{q:"哪個運動最好？",a:["不動","規律運動","熬夜","暴飲暴食"],c:1}
+];
+
+// 自動補到100題
+for(let i=questions.length;i<100;i++){
+questions.push({q:"健康問題 "+(i+1),a:["A","B","C","D"],c:Math.floor(Math.random()*4)});
+}
+
+function getQuestion(){
+if(used.length===100){alert("通關！");location.reload();}
+let idx;
+do{idx=Math.floor(Math.random()*questions.length);}while(used.includes(idx));
+used.push(idx);
+return questions[idx];
+}
+
+function updateHP(){
+document.querySelector("#heroHP .hp").style.width = heroHP+"%";
+document.querySelector("#monsterHP .hp").style.width = monsterHP+"%";
+}
+
+function loadQ(){
+const q = getQuestion();
+document.getElementById("question").innerText = q.q;
+const choicesDiv = document.getElementById("choices");
+choicesDiv.innerHTML = "";
+q.a.forEach((choice,i)=>{
+const btn=document.createElement("button");
+btn.innerText=choice;
+btn.onclick=()=>{
+if(i===q.c){
+monsterHP-=10;
+document.getElementById("hit").play();
+}else{
+heroHP-=10;
+document.getElementById("hurt").play();
+}
+updateHP();
+checkGame();
+loadQ();
+};
+choicesDiv.appendChild(btn);
+});
+}
+
+function checkGame(){
+if(heroHP<=0){alert("你輸了");location.reload();}
+if(monsterHP<=0){alert("你贏了");location.reload();}
+}
+
+window.onload=()=>{
+document.getElementById("bgm").play();
+loadQ();
+}
+</script>
+</body>
+</html>
